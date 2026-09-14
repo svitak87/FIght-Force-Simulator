@@ -3,11 +3,18 @@ let vidaEnemigo = 100;
 let intentosDeCuracion = 0;
 let intentosDeAtaque = 0;
 let juegoEnMarcha = true;
-
+const ataques = ["Puño", "Patada", "Espadazo", "Hechizo", "Flecha"];
 
 // MOSTRAR MENÚ
-
 const mostrarMenu = () => {
+  const menuOpciones = [
+    "1. Golpear",
+    "2. Curarte",
+    "3. Huir",
+    "4. Poción mágica (Puede debilitar al enemigo o a ti)",
+    "5. Salir de la pelea sin siquiera intentarlo",
+  ];
+
   return parseInt(
     prompt(
       "-Tu vida está al: " +
@@ -17,18 +24,12 @@ const mostrarMenu = () => {
         vidaEnemigo +
         "%\n" +
         "¿Qué quieres hacer?\n" +
-        "1. Golpear\n" +
-        "2. Curarte\n" +
-        "3. Huir\n" +
-        "4. Poción mágica (Puede debilitar al enemigo o a ti)\n" +
-        "5. Salir de la pelea sin siquiera intentarlo",
+        menuOpciones.join("\n").trim(),
     ),
   );
 };
 
-
 // VALIDAR ACCIÓN
-
 const validarAccion = (accion) => {
   if (!Number(accion) || accion < 1 || accion > 5) {
     alert("❌ Acción inválida. Por favor, ingresa un número del 1 al 5.");
@@ -38,6 +39,35 @@ const validarAccion = (accion) => {
 };
 
 // ATACAR
+const seleccionDeAtaque = (opcionAtaque) => {
+
+  const opcionEsNumero = Number(opcionAtaque);
+
+  if ( typeof opcionEsNumero !== "number" || opcionEsNumero < 0 || opcionEsNumero > 4) {
+    alert("❌ Acción inválida. Por favor, ingresa un número del 0 al 4.");
+    return;
+  }
+
+  let ataqueSeleccionado = "";
+
+  for (const ataque of ataques) {
+    const indiceAtaque = ataques.indexOf(ataque);
+    if (opcionEsNumero === indiceAtaque) {
+      ataqueSeleccionado = ataque;
+    }
+  }
+  return ataqueSeleccionado;
+};
+
+const mostrarListadoAtaques = () => {
+  let listado = "";
+
+  for (const ataque of ataques) {
+    const indiceAtaque = ataques.indexOf(ataque);
+    listado += indiceAtaque + ". " + ataque + "\n";
+  }
+  return listado;
+};
 
 const atacar = () => {
   if (intentosDeAtaque === 2) {
@@ -50,30 +80,45 @@ const atacar = () => {
     alert("Ya no puedes atacar más. Selecciona sí o sí la opción 4.");
     return;
   } else {
-    vidaEnemigo -= 20;
-    intentosDeAtaque++;
-    alert("💥 Golpeaste al enemigo.\nVida enemiga: " + vidaEnemigo + "%");
-    return;
+    const listadoAtaques = mostrarListadoAtaques();
+    const opcionAtaque = prompt(listadoAtaques);
+    const ataqueSeleccionado = seleccionDeAtaque(opcionAtaque);
+    const existeAtaque = ataques.includes(ataqueSeleccionado);
+
+    if (existeAtaque) {
+      vidaEnemigo -= 20;
+      intentosDeAtaque++;
+      alert(
+        "💥Golpeaste al enemigo con: " +
+          ataqueSeleccionado +
+          "\n" +
+          "Vida enemiga: " +
+          vidaEnemigo +
+          " %",
+      );
+      return;
+    } else {
+      alert("❌ No tienes disponible ese poder");
+      return;
+    }
   }
 };
 
-
 // CURARSE
-
 const curarse = () => {
   if (intentosDeAtaque > 2) {
-    alert("No puedes curarte. Selecciona sí o sí la opción 4.");
+    alert("❌ No puedes curarte. Selecciona sí o sí la opción 4.");
     return;
   }
 
   if (vidaJugador >= 50) {
-    alert("No seas nena!! Da un par de golpes más 😒");
+    alert("❌ No seas nena!! Da un par de golpes más 😒");
     return;
   }
 
-  if (intentosDeCuracion === 3) {
+  if (intentosDeCuracion === 2) {
     alert(
-      "Superaste la cantidad de intentos de cura. Dale, dale, a pelear!!! 😒",
+      "❌ Superaste la cantidad de intentos de cura. Dale, dale, a pelear!!! 😒",
     );
     return;
   }
@@ -83,15 +128,14 @@ const curarse = () => {
   intentosDeAtaque = 0;
 
   alert("Te curaste. Muy bien!!! ❤️\nTu vida está al: " + vidaJugador + "%");
+  return
 };
 
-
 // HUIR
-
 const huir = () => {
   if (vidaJugador > 50) {
     alert(
-      "Sos una gallina!! Todavía tienes suficiente vida para seguir peleando. Vamos!!",
+      "❌ Sos una gallina!! Todavía tienes suficiente vida para seguir peleando. Vamos!!",
     );
 
     return;
@@ -101,7 +145,6 @@ const huir = () => {
 
   alert("🏃 Escapaste de la pelea. 💀 PERDISTE!!");
 };
-
 
 // POCIÓN MÁGICA
 const validarNumero = (valorAleatorio, minimo, maximo) => {
@@ -118,50 +161,58 @@ const usarPocionMagica = () => {
   const numeroEsValido = validarNumero(valorAleatorio, 1, 10);
 
   if (!numeroEsValido) {
-    alert(valorAleatorio + " es un número incorrecto");
+    alert("❌" + valorAleatorio + " es un número incorrecto");
     return;
   }
-
-  if (valorAleatorio >= 5) {
-    vidaJugador -= 20;
+  if(valorAleatorio === 5 || valorAleatorio === 3 || valorAleatorio === 8){
+    alert("La suerte estuvo de parte de los dos; se salvaron!!")
     intentosDeAtaque = 0;
+    return
+  }
+
+  if (valorAleatorio > 5) {
+    vidaJugador -= 70;
+    intentosDeAtaque = 0;
+    const elementoEliminado = ataques.pop();
 
     alert(
-      "Ufff, Ouch!! Lo siento, tu nivel de vida está al: " + vidaJugador + "%",
+      "Ufff, Ouch!! Lo siento, tu nivel de vida está al: " +
+        vidaJugador +
+        "%" +
+        "\n" +
+        "Ademas perdiste un poder: " +
+        elementoEliminado,
     );
 
     return;
   }
 
-  if (vidaJugador > 50) {
+  if (valorAleatorio < 5) {
     vidaEnemigo -= 30;
+    const nuevoAtaque = "Lanza";
+    ataques.push(nuevoAtaque);
+
     alert(
-      "Golpeaste al enemigo brutalmente, Quedó con vida al: " + vidaEnemigo,
+      "Golpeaste al enemigo brutalmente, Quedó con vida al: " +
+        vidaEnemigo +
+        "% \n" +
+        "Ademas ganaste un nuevo ataque: " +
+        nuevoAtaque,
     );
     return;
   }
-
-  vidaJugador = 100;
-  intentosDeAtaque = 0;
-  alert(
-    "La suerte estuvo de tu lado. Tu nivel de vida está al: " +
-      vidaJugador +
-      "%",
-  );
 };
 
 // SALIR DEL JUEGO
-
 const salirDelJuego = () => {
   juegoEnMarcha = false;
 
-  alert("Nos vemos en la morgue!");
+  alert("❌ Nos vemos en la morgue!");
 
   return;
 };
 
 // COMPROBAR RESULTADO
-
 const comprobarEstadoDelJuego = () => {
   if (vidaEnemigo <= 0) {
     juegoEnMarcha = false;
@@ -209,8 +260,5 @@ while (juegoEnMarcha) {
     comprobarEstadoDelJuego();
   }
 }
-
-
-
 
 
