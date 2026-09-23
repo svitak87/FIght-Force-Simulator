@@ -265,9 +265,6 @@ const comprobarEstadoDelJuego = () => {
 
 alert("⚔️ ¡COMIENZA LA PELEA!");
 
-let nombre = null;
-nombre
-
 const jugador = new Jugador("Oscar");
 const enemigo = new Jugador("enemigo");
 
