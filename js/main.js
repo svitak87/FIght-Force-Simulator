@@ -14,61 +14,23 @@ class Jugador {
       { nombre: "Flecha", daño: 40 },
     ];
   }
-  atacar(opcionAtaque) {
-    if (this.intentosDeAtaque > 2) {
-      alert("Ya no puedes atacar más. Selecciona sí o sí la opción 4.");
-      return;
-    }
-    if (this.intentosDeAtaque === 2) {
-      this.intentosDeAtaque++;
-      alert(
-        "Estás golpeando mucho. Dejemos que la suerte juegue ahora. Selecciona sí o sí la opción 4.",
-      );
-      return;
-    }
+  recibirDaño(daño) {
+    this.vida -= daño;
 
-    if (
-      typeof opcionAtaque !== "number" ||
-      opcionAtaque < 0 ||
-      opcionAtaque > 4 ||
-      isNaN(opcionAtaque)
-    ) {
-      alert("❌ Acción inválida. Por favor, ingresa un número del 0 al 4.");
-      return;
+    if (this.vida < 0) {
+      this.vida = 0;
     }
+  }
 
-    let ataqueSeleccionado = "";
+  curarse(medicina) {
+    let resultadoVida = (this.vida += medicina);
 
-    for (const ataque of this.ataques) {
-      const indiceAtaque = this.ataques.indexOf(ataque);
-      if (opcionAtaque === indiceAtaque) {
-        ataqueSeleccionado = ataque;
-      }
-    }
-    let estadoVida = null;
-    if (ataqueSeleccionado) {
-      estadoVida = enemigo.vida -= ataqueSeleccionado.daño;
-      if (estadoVida <= 0) {
-        estadoVida = 0;
-        enemigo.vida = estadoVida;
-      }
-      this.intentosDeAtaque++;
-      alert(
-        "💥Golpeaste al enemigo con: " +
-          ataqueSeleccionado.nombre +
-          "\n" +
-          "Vida enemiga: " +
-          enemigo.vida +
-          " %",
-      );
-      return;
-    } else {
-      alert("❌ No tienes disponible ese poder");
-      return;
+    if (resultadoVida >= 100) {
+      this.vida = 100;
     }
   }
 }
-
+5;
 // MOSTRAR MENÚ
 const validarAccion = (accion) => {
   if (!Number(accion) || accion < 1 || accion > 5) {
@@ -113,29 +75,79 @@ const mostrarListadoAtaques = (ataques) => {
   return listadoAtaques;
 };
 
+const gestionAtaque = (opcionAtaque) => {
+  if (jugador.intentosDeAtaque > 2) {
+    alert("Ya no puedes atacar más. Selecciona sí o sí la opción 4.");
+    return;
+  }
+  if (jugador.intentosDeAtaque === 2) {
+    jugador.intentosDeAtaque++;
+    alert(
+      "Estás golpeando mucho. Dejemos que la suerte juegue ahora. Selecciona sí o sí la opción 4.",
+    );
+    return;
+  }
+
+  if (
+    typeof opcionAtaque !== "number" ||
+    opcionAtaque < 0 ||
+    opcionAtaque > 4 ||
+    isNaN(opcionAtaque)
+  ) {
+    alert("❌ Acción inválida. Por favor, ingresa un número del 0 al 4.");
+    return;
+  }
+
+  let ataqueSeleccionado = "";
+
+  for (const ataque of jugador.ataques) {
+    const indiceAtaque = jugador.ataques.indexOf(ataque);
+    if (opcionAtaque === indiceAtaque) {
+      ataqueSeleccionado = ataque;
+    }
+  }
+
+  if (ataqueSeleccionado) {
+    enemigo.recibirDaño(ataqueSeleccionado.daño);
+    jugador.intentosDeAtaque++;
+    alert(
+      "💥Golpeaste al enemigo con: " +
+        ataqueSeleccionado.nombre +
+        "\n" +
+        "Vida enemiga: " +
+        enemigo.vida +
+        " %" 
+    );
+    return;
+  } else {
+    alert("❌ No tienes disponible ese poder");
+    return;
+  }
+};
+
 // CURARSE
 const curarse = () => {
   if (jugador.intentosDeAtaque > 2) {
-    jugador.intentosDeCuracion++
+    jugador.intentosDeCuracion++;
     alert("❌ No puedes curarte. Selecciona sí o sí la opción 4.");
     return;
   }
 
   if (jugador.vida >= 50) {
-    jugador.intentosDeCuracion++
+    jugador.intentosDeCuracion++;
     alert("❌ No seas nena!! Da un par de golpes más 😒");
     return;
   }
 
   if (jugador.intentosDeCuracion === 2) {
-    jugador.intentosDeCuracion++
+    jugador.intentosDeCuracion++;
     alert(
       "❌ Superaste la cantidad de intentos de cura. Dale, dale, a pelear!!! 😒",
     );
     return;
   }
 
-  jugador.vida += 20;
+  jugador.curarse(20);
   jugador.intentosDeCuracion++;
   jugador.intentosDeAtaque = 0;
 
@@ -191,17 +203,12 @@ const usarPocionMagica = () => {
     return;
   }
 
-  let resultadoVida = null;
   if (valorAleatorio > 5) {
-    resultadoVida = jugador.vida -= 70;
-
-    if (resultadoVida <= 0) {
-      resultadoVida = 0;
-      jugador.vida = resultadoVida;
-    }
+    jugador.recibirDaño(70);
     jugador.intentosDeAtaque = 0;
     enemigo.intentosDeAtaque++;
-    const elementoEliminado = jugador.ataques.pop();
+    enemigo.curarse(35);
+    const ataqueEliminado = jugador.ataques.pop();
 
     alert(
       "Ufff, Ouch!! Lo siento, tu nivel de vida está al: " +
@@ -209,14 +216,16 @@ const usarPocionMagica = () => {
         "%" +
         "\n" +
         "Ademas perdiste un poder: " +
-        elementoEliminado.nombre,
+        ataqueEliminado.nombre + 
+        "\n" +
+        "Adicionalmente tu enemigo recuperó vida al: " + enemigo.vida + "%"
     );
 
     return;
   }
 
   if (valorAleatorio < 5) {
-    enemigo.vida -= 30;
+    enemigo.recibirDaño(30);
     const nuevoAtaque = { nombre: "Lanza", daño: 15 };
     jugador.ataques.push(nuevoAtaque);
 
@@ -243,7 +252,6 @@ const salirDelJuego = () => {
 // COMPROBAR RESULTADO
 const comprobarEstadoDelJuego = () => {
   if (enemigo.vida <= 0) {
-    enemigo.vida = 0;
     juegoEnMarcha = false;
     alert(
       "🏆 ¡GANASTE! En la consola presionando F12, veras las estadísticas finales de la partida",
@@ -253,7 +261,6 @@ const comprobarEstadoDelJuego = () => {
   }
 
   if (jugador.vida <= 0) {
-    jugador.vida = 0;
     juegoEnMarcha = false;
     alert(
       "💀 PERDISTE!! En la consola presionando F12, veras las estadísticas finales de la partida",
@@ -265,9 +272,11 @@ const comprobarEstadoDelJuego = () => {
 
 alert("⚔️ ¡COMIENZA LA PELEA!");
 
-const jugador = new Jugador("Oscar");
-const enemigo = new Jugador("enemigo");
+const nombreJugador = prompt("Dale nombre a tu personaje:");
+const jugador = new Jugador(nombreJugador);
 
+const nombreEnemigo = prompt("Dale nombre a tu enemigo:");
+const enemigo = new Jugador(nombreEnemigo);
 
 while (juegoEnMarcha) {
   const accion = mostrarMenu();
@@ -278,7 +287,7 @@ while (juegoEnMarcha) {
     switch (accion) {
       case 1:
         const opcionAtaque = prompt(mostrarListadoAtaques(jugador.ataques));
-        jugador.atacar(Number(opcionAtaque));
+        gestionAtaque(Number(opcionAtaque));
         break;
 
       case 2:
@@ -301,5 +310,3 @@ while (juegoEnMarcha) {
     comprobarEstadoDelJuego();
   }
 }
-
-
