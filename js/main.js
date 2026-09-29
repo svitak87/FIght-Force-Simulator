@@ -123,11 +123,7 @@ const gestionAtaque = (opcionAtaque) => {
   jugador.ataques.find((ataque) => {
     if (ataque.id === opcionAtaque && ataque.habilitado) {
       ataqueSeleccionado = ataque;
-      return;
     }
-    // if (!ataque.habilitado) {
-    //   alert("❌ No tienes disponible ese poder");
-    // }
   });
 
   if (ataqueSeleccionado) {
@@ -233,7 +229,7 @@ const usarPocionMagica = () => {
     enemigo.intentosDeAtaque++;
     enemigo.curarse(35);
     
-    const ataqueDehabilitado = jugador.deshabilitarAtaque()
+    const ataqueDeshabilitado = jugador.deshabilitarAtaque()
 
     alert(
       "Ufff, Ouch!! Lo siento, tu nivel de vida está al: " +
@@ -241,7 +237,7 @@ const usarPocionMagica = () => {
         "%" +
         "\n" +
         "Además perdiste un poder: " +
-        ataqueDehabilitado.nombre +
+        ataqueDeshabilitado.nombre +
         "\n" +
         "Adicionalmente tu enemigo recuperó vida al: " +
         enemigo.vida +
@@ -252,12 +248,6 @@ const usarPocionMagica = () => {
   if (valorAleatorio < 5) {
     enemigo.recibirDaño(30);
     const ataqueHabilitado = jugador.habilitarAtaque()
-    // const nuevoAtaque = jugador.ataques.find((ataque) => !ataque.habilitado);
-    // if (nuevoAtaque) {
-    //   nuevoAtaque.habilitado = true;
-    // }
-    // const nuevoAtaque = { id: 6, nombre: "Lanza", daño: 15, habilitado: true };
-    // jugador.ataques.push(nuevoAtaque);
   
     alert(
       "Golpeaste al enemigo brutalmente, Quedó con vida al: " +
