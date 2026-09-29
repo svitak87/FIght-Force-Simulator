@@ -7,11 +7,12 @@ class Jugador {
     this.intentosDeAtaque = 0;
     this.vida = 100;
     this.ataques = [
-      { nombre: "Puño", daño: 20 },
-      { nombre: "Patada", daño: 25 },
-      { nombre: "Espadazo", daño: 30 },
-      { nombre: "Hechizo", daño: 35 },
-      { nombre: "Flecha", daño: 40 },
+      { id: 1, nombre: "Puño", daño: 20, habilitado: true },
+      { id: 2, nombre: "Patada", daño: 25, habilitado: true },
+      { id: 3, nombre: "Espadazo", daño: 30, habilitado: true },
+      { id: 4, nombre: "Hechizo", daño: 35, habilitado: true },
+      { id: 5, nombre: "Flecha", daño: 40, habilitado: true },
+      { id: 6, nombre: "Lanza", daño: 15, habilitado: false },
     ];
   }
   recibirDaño(daño) {
@@ -29,6 +30,21 @@ class Jugador {
       this.vida = 100;
     }
   }
+  deshabilitarAtaque(){
+    const ataqueAdeshabilitar = this.ataques.find((ataque) => ataque.habilitado)
+    if(ataqueAdeshabilitar){
+      ataqueAdeshabilitar.habilitado = false
+    }
+    return ataqueAdeshabilitar
+  }
+  habilitarAtaque(){
+    const ataqueAhabilitar = this.ataques.find((ataque) => ataque.nombre === "Lanza")
+
+    if(ataqueAhabilitar){
+      ataqueAhabilitar.habilitado = true
+    }
+    return ataqueAhabilitar
+  }
 }
 5;
 // MOSTRAR MENÚ
@@ -40,12 +56,12 @@ const validarAccion = (accion) => {
   return true;
 };
 const mostrarMenu = () => {
-  const menuOpciones = [
-    "1. Golpear",
-    "2. Curarte",
-    "3. Huir",
-    "4. Poción mágica (Puede debilitar al enemigo o a ti)",
-    "5. Salir de la pelea sin siquiera intentarlo",
+  const opciones = [
+    { id: 1, descripcion: "Golpear" },
+    { id: 2, descripcion: "Curarte" },
+    { id: 3, descripcion: "Huir" },
+    { id: 4, descripcion: "Poción mágica (Puede debilitar al enemigo o a ti)" },
+    { id: 5, descripcion: "Salir de la pelea sin siquiera intentarlo" },
   ];
 
   return parseInt(
@@ -59,7 +75,9 @@ const mostrarMenu = () => {
         enemigo.vida +
         "%\n" +
         "¿Qué quieres hacer?\n" +
-        menuOpciones.join("\n").trim(),
+        opciones.map((opcion) => {
+          return opcion.id + ". " + opcion.descripcion + "\n";
+        }),
     ),
   );
 };
@@ -68,10 +86,12 @@ const mostrarMenu = () => {
 const mostrarListadoAtaques = (ataques) => {
   let listadoAtaques = "";
 
-  for (const ataque of ataques) {
-    const indiceAtaque = ataques.indexOf(ataque);
-    listadoAtaques += indiceAtaque + ". " + ataque.nombre + "\n";
-  }
+  ataques.forEach((ataque) => {
+    if (ataque.habilitado) {
+      listadoAtaques += ataque.id + ". " + ataque.nombre + "\n";
+    }
+  });
+
   return listadoAtaques;
 };
 
@@ -90,22 +110,25 @@ const gestionAtaque = (opcionAtaque) => {
 
   if (
     typeof opcionAtaque !== "number" ||
-    opcionAtaque < 0 ||
-    opcionAtaque > 4 ||
+    opcionAtaque < 1 ||
+    opcionAtaque > 6 ||
     isNaN(opcionAtaque)
   ) {
-    alert("❌ Acción inválida. Por favor, ingresa un número del 0 al 4.");
+    alert("❌ Acción inválida. Por favor, ingresa un número del 1 al 6.");
     return;
   }
 
   let ataqueSeleccionado = "";
 
-  for (const ataque of jugador.ataques) {
-    const indiceAtaque = jugador.ataques.indexOf(ataque);
-    if (opcionAtaque === indiceAtaque) {
+  jugador.ataques.find((ataque) => {
+    if (ataque.id === opcionAtaque && ataque.habilitado) {
       ataqueSeleccionado = ataque;
+      return;
     }
-  }
+    // if (!ataque.habilitado) {
+    //   alert("❌ No tienes disponible ese poder");
+    // }
+  });
 
   if (ataqueSeleccionado) {
     enemigo.recibirDaño(ataqueSeleccionado.daño);
@@ -116,12 +139,13 @@ const gestionAtaque = (opcionAtaque) => {
         "\n" +
         "Vida enemiga: " +
         enemigo.vida +
-        " %" 
+        " %",
     );
     return;
-  } else {
+  }
+
+  if (!ataqueSeleccionado.habilitado) {
     alert("❌ No tienes disponible ese poder");
-    return;
   }
 };
 
@@ -208,37 +232,45 @@ const usarPocionMagica = () => {
     jugador.intentosDeAtaque = 0;
     enemigo.intentosDeAtaque++;
     enemigo.curarse(35);
-    const ataqueEliminado = jugador.ataques.pop();
+    
+    const ataqueDehabilitado = jugador.deshabilitarAtaque()
 
     alert(
       "Ufff, Ouch!! Lo siento, tu nivel de vida está al: " +
         jugador.vida +
         "%" +
         "\n" +
-        "Ademas perdiste un poder: " +
-        ataqueEliminado.nombre + 
+        "Además perdiste un poder: " +
+        ataqueDehabilitado.nombre +
         "\n" +
-        "Adicionalmente tu enemigo recuperó vida al: " + enemigo.vida + "%"
+        "Adicionalmente tu enemigo recuperó vida al: " +
+        enemigo.vida +
+        "%",
     );
-
-    return;
   }
 
   if (valorAleatorio < 5) {
     enemigo.recibirDaño(30);
-    const nuevoAtaque = { nombre: "Lanza", daño: 15 };
-    jugador.ataques.push(nuevoAtaque);
-
+    const ataqueHabilitado = jugador.habilitarAtaque()
+    // const nuevoAtaque = jugador.ataques.find((ataque) => !ataque.habilitado);
+    // if (nuevoAtaque) {
+    //   nuevoAtaque.habilitado = true;
+    // }
+    // const nuevoAtaque = { id: 6, nombre: "Lanza", daño: 15, habilitado: true };
+    // jugador.ataques.push(nuevoAtaque);
+  
     alert(
       "Golpeaste al enemigo brutalmente, Quedó con vida al: " +
         enemigo.vida +
         "% \n" +
         "Ademas ganaste un nuevo ataque: " +
-        nuevoAtaque.nombre,
+        ataqueHabilitado.nombre,
+
     );
     return;
   }
 };
+
 
 // SALIR DEL JUEGO
 const salirDelJuego = () => {
@@ -256,7 +288,19 @@ const comprobarEstadoDelJuego = () => {
     alert(
       "🏆 ¡GANASTE! En la consola presionando F12, veras las estadísticas finales de la partida",
     );
-    console.log("Estadísticas:", "\nJugador:", jugador, "\nEnemigo:", enemigo);
+    console.log(
+      "Estadísticas:",
+      "\nJugador:",
+      {
+        ...jugador,
+        ataques: jugador.ataques.filter((ataque) => ataque.habilitado),
+      },
+      "\nEnemigo:",
+      {
+        ...enemigo,
+        ataques: enemigo.ataques.filter((ataque) => ataque.habilitado),
+      },
+    );
     return;
   }
 
@@ -265,7 +309,19 @@ const comprobarEstadoDelJuego = () => {
     alert(
       "💀 PERDISTE!! En la consola presionando F12, veras las estadísticas finales de la partida",
     );
-    console.log("Estadísticas:\n", "Jugador:", jugador, "\nEnemigo:", enemigo);
+    console.log(
+      "Estadísticas:",
+      "\nJugador:",
+      {
+        ...jugador,
+        ataques: jugador.ataques.filter((ataque) => ataque.habilitado),
+      },
+      "\nEnemigo:",
+      {
+        ...enemigo,
+        ataques: enemigo.ataques.filter((ataque) => ataque.habilitado),
+      },
+    );
     return;
   }
 };
