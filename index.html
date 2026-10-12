@@ -4,12 +4,82 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="./js/main.js" defer></script>
+    <link rel="stylesheet" href="./styles.css" />
     <title>JS-Entrga 1</title>
   </head>
   <body>
-    <h1 id="demo">Entrega 5, módulo Javascript Coder</h1>
-    <div id="container">
-      
+    <header id="contenedor-nivel-sangre">
+      <div class="barra-vida">
+        <p class="jugadores"></p>
+        <div id="vida-jugador" class="vida"></div>
+      </div>
+
+      <div class="barra-vida">
+        <p class="jugadores"></p>
+        <div id="vida-enemigo" class="vida"></div>
+      </div>
+    </header>
+
+    <main id="contenedor-principal">
+      <section
+        id="contenedor-tarjetas-acciones"
+        class="contenedor-tarjetas"
+        style="display: none"
+      ></section>
+      <section
+        id="contenedor-tarjetas-ataques"
+        class="contenedor-tarjetas"
+        style="display: none"
+      ></section>
+      <form id="formulario-ingreso">
+        <label for="nombre-jugador"
+          >Jugador:
+          <input
+            type="text"
+            placeholder="Nombre del jugador"
+            id="input-jugador"
+            class="input-text"
+          />
+        </label>
+        <label for="nombre-jugador"
+          >Enemigo:
+          <input
+            type="text"
+            placeholder="Nombre del enemigo"
+            id="input-enemigo"
+            class="input-text"
+          />
+        </label>
+        <p class="errors"></p>
+        <button class="botones">¡Pelear!</button>
+      </form>
+
+      <!-- Modal de inicio -->
+      <div id="modal-inicio">
+        <h1 id="titulo">⚔️ Fight Force Simulator</h1>
+        <p id="sub-titulo">¡Comienza la pelea!</p>
+        <button id="boton-continuar" class="botones">Empezar</button>
+      </div>
+    </main>
+    <div class="overlay">
+      <div id="mensaje-popup" class="popup">
+        <p id="mensaje"></p>
+        <button id="cerrar-popup" class="botones">Cerrar</button>
+      </div>
+      <form id="pocion-magica">
+        <label id="mensaje">
+          Ingresa un número del 1 al 10. Si la suerte está de tu lado, te vas a curar; si no, te va a doler.
+          <input
+            type="number"
+            placeholder="Ingresa un número del 1 al 10"
+            class="input-text"
+            id="input-pocion-magica"
+            min="1"
+            max="10"
+            required
+          />
+        </label>
+      </form>
     </div>
   </body>
 </html>
