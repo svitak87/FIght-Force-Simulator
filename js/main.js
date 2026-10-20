@@ -79,6 +79,8 @@ const mensajePopUp = document.querySelector("#mensaje-popup");
 const mensaje = document.querySelector("#mensaje");
 const cerrarMensajeBtn = document.querySelector("#cerrar-popup");
 const overlay = document.querySelector(".overlay");
+const botonClaroOscuro = document.querySelector("#claro-oscuro-btn");
+const icono = document.querySelector("#icono");
 
 let error = document.querySelector(".errors");
 
@@ -92,31 +94,74 @@ botonContinuar.addEventListener("click", () => {
   formularioIngreso.style.display = "block";
 });
 
+const temaGuardado = localStorage.getItem("tema");
+
+if (temaGuardado === "oscuro") {
+  document.body.classList.add("oscuro");
+  botonClaroOscuro.textContent = "Modo claro";
+} else {
+  botonClaroOscuro.textContent = "Modo oscuro";
+}
+
+const modoClaroOscuro = () => {
+  document.body.classList.toggle("oscuro");
+
+  const esOscuro = document.body.classList.contains("oscuro");
+
+  localStorage.setItem("tema", esOscuro ? "oscuro" : "claro");
+
+  botonClaroOscuro.textContent = esOscuro ? "Modo claro" : "Modo oscuro";
+};
+
+botonClaroOscuro.addEventListener("click", modoClaroOscuro);
+
 let jugador = {};
 let enemigo = {};
 
 const crearJugadores = (e) => {
   e.preventDefault();
 
-  if (inputJugador.value === "" || inputEnemigo.value === "") {
-    error.classList.add("errors");
-    error.innerHTML = "El formulario debe tener todos los datos";
+  const existenJugadores = localStorage.getItem("jugadores");
 
-    setTimeout(() => {
-      error.innerHTML = "";
-    }, 4000);
+  let nombreJugador;
+  let nombreEnemigo;
+
+  if (existenJugadores !== null) {
+    const jugadoresGuardados = JSON.parse(existenJugadores);
+    [{ nombreJugador }, { nombreEnemigo }] = jugadoresGuardados;
+
   } else {
-    const nombreJugador = inputJugador.value;
-    const nombreEnemigo = inputEnemigo.value;
+    nombreJugador = inputJugador.value.trim();
+    nombreEnemigo = inputEnemigo.value.trim();
 
-    jugador = new Jugador(nombreJugador);
-    enemigo = new Jugador(nombreEnemigo);
+    if (nombreJugador === "" || nombreEnemigo === "") {
+      error.classList.add("errors");
+      error.innerHTML =
+        "Debes ingresar el nombre del jugador y del enemigo.";
 
-    renderizarNombres();
+      setTimeout(() => {
+        error.innerHTML = "";
+        error.classList.remove("errors");
+      }, 4000);
 
-    formularioIngreso.style.display = "none";
-    contenedorNivelSangre.style.display = "block";
+      return;
+    }
+
+    const jugadores = [
+      { nombreJugador },
+      { nombreEnemigo },
+    ];
+
+    localStorage.setItem("jugadores", JSON.stringify(jugadores));
   }
+
+  jugador = new Jugador(nombreJugador);
+  enemigo = new Jugador(nombreEnemigo);
+
+  renderizarNombres();
+
+  formularioIngreso.style.display = "none";
+  contenedorNivelSangre.style.display = "block";
 };
 
 formularioIngreso.addEventListener("submit", crearJugadores);
@@ -139,17 +184,13 @@ const ocultarMensaje = () => {
 cerrarMensajeBtn.addEventListener("click", ocultarMensaje);
 
 const validarColorBarrasVida = (estadoJugador, estadoEnemigo) => {
-  if (estadoJugador <= 25) {
-    vidaJugador.style.backgroundColor = "red";
-  } else {
-    vidaJugador.style.backgroundColor = "#3dee1a";
-  }
+  estadoJugador <= 25
+    ? (vidaJugador.style.backgroundColor = "red")
+    : (vidaJugador.style.backgroundColor = "#3dee1a");
 
-  if (estadoEnemigo <= 25) {
-    vidaEnemigo.style.backgroundColor = "red";
-  } else {
-    vidaEnemigo.style.backgroundColor = "#3dee1a";
-  }
+  estadoEnemigo <= 25
+    ? (vidaEnemigo.style.backgroundColor = "red")
+    : (vidaEnemigo.style.backgroundColor = "#3dee1a");
 };
 
 // // MOSTRAR MENÚ
@@ -319,7 +360,7 @@ const numeroPocionMagica = (e) => {
 const usarPocionMagica = () => {
   formularioPocionMagica.style.display = "block";
   overlay.style.display = "flex";
-  mensajePopUp.style.display = "none"
+  mensajePopUp.style.display = "none";
 
   formularioPocionMagica.onsubmit = (e) => {
     e.preventDefault();
@@ -353,18 +394,18 @@ const usarPocionMagica = () => {
       formularioPocionMagica.style.display = "none";
       validarColorBarrasVida(jugador.vida, enemigo.vida);
     }
-    
+
     if (valorAleatorio < 5) {
       const vida = enemigo.recibirDaño(30);
       vidaEnemigo.style.width = `${vida}%`;
       const ataqueHabilitado = jugador.habilitarAtaque();
-      
+
       mostrarMensaje(
         "Golpeaste al enemigo brutalmente, Quedó con vida al: " +
-        enemigo.vida +
-        "% \n" +
-        "Ademas ganaste un nuevo ataque: " +
-        ataqueHabilitado.nombre,
+          enemigo.vida +
+          "% \n" +
+          "Ademas ganaste un nuevo ataque: " +
+          ataqueHabilitado.nombre,
       );
       formularioPocionMagica.style.display = "none";
       validarColorBarrasVida(jugador.vida, enemigo.vida);

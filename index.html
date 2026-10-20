@@ -4,10 +4,13 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="./js/main.js" defer></script>
-    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./styles/styles.css" />
     <title>JS-Entrga 1</title>
   </head>
   <body>
+    <button id="claro-oscuro-btn">
+      <p></p>
+    </button>
     <header id="contenedor-nivel-sangre">
       <div class="barra-vida">
         <p class="jugadores"></p>
@@ -51,6 +54,7 @@
           />
         </label>
         <p class="errors"></p>
+        <p>Si ya habías asignado nombres, puedes continuar con los mismos.</p>
         <button class="botones">¡Pelear!</button>
       </form>
 
@@ -68,7 +72,8 @@
       </div>
       <form id="pocion-magica">
         <label id="mensaje">
-          Ingresa un número del 1 al 10. Si la suerte está de tu lado, te vas a curar; si no, te va a doler.
+          Ingresa un número del 1 al 10. Si la suerte está de tu lado, te vas a
+          curar; si no, te va a doler.
           <input
             type="number"
             placeholder="Ingresa un número del 1 al 10"
