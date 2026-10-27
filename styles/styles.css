@@ -290,3 +290,11 @@ body.oscuro .tarjeta-ataques {
   color: red;
   font-size: 1rem;
 }
+
+/* =========================
+   MENSAJE DE CARGA
+========================= */
+.mensaje-carga{
+  color: #178002;
+  font-size: 1rem;
+}

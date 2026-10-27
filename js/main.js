@@ -83,6 +83,7 @@ const botonClaroOscuro = document.querySelector("#claro-oscuro-btn");
 const icono = document.querySelector("#icono");
 
 let error = document.querySelector(".errors");
+let mensajeCarga = document.querySelector(".mensaje-carga")
 
 contenedorNivelSangre.style.display = "none";
 formularioIngreso.style.display = "none";
@@ -112,59 +113,95 @@ const modoClaroOscuro = () => {
 
   botonClaroOscuro.textContent = esOscuro ? "Modo claro" : "Modo oscuro";
 };
-
 botonClaroOscuro.addEventListener("click", modoClaroOscuro);
 
 let jugador = {};
 let enemigo = {};
 
-const crearJugadores = (e) => {
-  e.preventDefault();
+const cargarJugadores = () => {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const existenJugadores = localStorage.getItem("jugadores");
 
-  const existenJugadores = localStorage.getItem("jugadores");
+      if (existenJugadores !== null) {
+        resolve(JSON.parse(existenJugadores));
+      } 
+    }, 3000);
+  });
+};
+
+
+const crearJugadores = async (e) => {
+  e.preventDefault();
 
   let nombreJugador;
   let nombreEnemigo;
 
-  if (existenJugadores !== null) {
-    const jugadoresGuardados = JSON.parse(existenJugadores);
-    [{ nombreJugador }, { nombreEnemigo }] = jugadoresGuardados;
+  try {
+    const existenJugadores = localStorage.getItem("jugadores");
 
-  } else {
-    nombreJugador = inputJugador.value.trim();
-    nombreEnemigo = inputEnemigo.value.trim();
+    if (existenJugadores !== null) {
+      mensajeCarga.classList.add("mensaje-carga");
+      mensajeCarga.textContent = "Cargando los nombres de los jugadores"
+      const jugadoresGuardados = await cargarJugadores();
 
-    if (nombreJugador === "" || nombreEnemigo === "") {
-      error.classList.add("errors");
-      error.innerHTML =
-        "Debes ingresar el nombre del jugador y del enemigo.";
+      if(jugadoresGuardados){
+        setTimeout(() => {
+          mensajeCarga.textContent = ""
+          mensajeCarga.classList.remove("mensaje-carga")
+        }, 2000)
+      }
 
-      setTimeout(() => {
-        error.innerHTML = "";
-        error.classList.remove("errors");
-      }, 4000);
+      [{ nombreJugador }, { nombreEnemigo }] = jugadoresGuardados;
 
-      return;
+    } else {
+      nombreJugador = inputJugador.value.trim();
+      nombreEnemigo = inputEnemigo.value.trim();
+
+      if (nombreJugador === "" || nombreEnemigo === "") {
+        error.classList.add("errors");
+        error.textContent =
+          "Debes ingresar el nombre del jugador y del enemigo.";
+
+        setTimeout(() => {
+          error.textContent = "";
+          error.classList.remove("errors");
+        }, 4000);
+
+        return;
+      }
+
+      const jugadores = [
+        { nombreJugador },
+        { nombreEnemigo },
+      ];
+
+      localStorage.setItem("jugadores", JSON.stringify(jugadores));
     }
 
-    const jugadores = [
-      { nombreJugador },
-      { nombreEnemigo },
-    ];
+    jugador = new Jugador(nombreJugador);
+    enemigo = new Jugador(nombreEnemigo);
 
-    localStorage.setItem("jugadores", JSON.stringify(jugadores));
+    renderizarNombres();
+
+    formularioIngreso.style.display = "none";
+    contenedorNivelSangre.style.display = "block";
+
+  } catch (error) {
+    console.error("Error al crear los jugadores:", error);
+
+    mostrarMensaje(
+      "No se pudieron recuperar los datos de los jugadores. Inténtalo nuevamente."
+    );
+
+  } finally {
+    console.log("Finalizó el intento de creación de jugadores.");
   }
-
-  jugador = new Jugador(nombreJugador);
-  enemigo = new Jugador(nombreEnemigo);
-
-  renderizarNombres();
-
-  formularioIngreso.style.display = "none";
-  contenedorNivelSangre.style.display = "block";
 };
 
 formularioIngreso.addEventListener("submit", crearJugadores);
+
+
 
 const renderizarNombres = () => {
   nombreJugadores[0].innerHTML = jugador.nombre;
@@ -195,6 +232,7 @@ const validarColorBarrasVida = (estadoJugador, estadoEnemigo) => {
 
 // // MOSTRAR MENÚ
 const mostrarMenu = () => {
+  contenedorTarjetasAcciones.innerHTML = "";
   contenedorTarjetasAcciones.style.display = "grid";
   contenedorTarjetasAtaques.style.display = "none";
 
@@ -416,7 +454,9 @@ const usarPocionMagica = () => {
 // SALIR DEL JUEGO
 const salirDelJuego = () => {
   juegoEnMarcha = false;
-  alert("❌ Nos vemos en la morgue!");
+  contenedorTarjetasAcciones.style.display = "none";
+  contenedorNivelSangre.style.display = "none";
+  formularioIngreso.style.display = "block";
 };
 
 // // COMPROBAR RESULTADO
