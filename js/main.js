@@ -1,4 +1,32 @@
-let juegoEnMarcha = true;
+let juegoEnMarcha = false;
+let resolverTurno = null;
+let jugador = {};
+let enemigo = {};
+let datosJuego = null;
+
+const cargarDatos = async () => {
+  if (datosJuego) return datosJuego;
+
+  try {
+    const response = await fetch("./data/datos.json");
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    datosJuego = await response.json();
+
+    return datosJuego;
+  } catch (error) {
+    console.error("Error al cargar los datos:", error);
+
+    mostrarMensaje(
+      "No se pudieron cargar los datos del juego. Inténtalo nuevamente.",
+    );
+
+    return [];
+  }
+};
 
 class Jugador {
   constructor(nombre) {
@@ -6,30 +34,23 @@ class Jugador {
     this.intentosDeCuracion = 0;
     this.intentosDeAtaque = 0;
     this.vida = 100;
-    this.ataques = [
-      { id: 1, nombre: "Puño", daño: 20, icono: "👊", habilitado: true },
-      { id: 2, nombre: "Patada", daño: 25, icono: "🦵", habilitado: true },
-      { id: 3, nombre: "Espadazo", daño: 30, icono: "⚔️", habilitado: true },
-      { id: 4, nombre: "Hechizo", daño: 35, icono: "🪄", habilitado: true },
-      { id: 5, nombre: "Flecha", daño: 40, icono: "🏹", habilitado: true },
-      { id: 6, nombre: "Lanza", daño: 15, icono: "🔱", habilitado: false },
-    ];
+    this.ataques = [];
   }
   recibirDaño(daño) {
-    const vida = (this.vida -= daño);
+    this.vida -= daño;
 
     if (this.vida < 0) {
       this.vida = 0;
     }
-    return vida;
+    return this.vida;
   }
   curarse(medicina) {
-    const vida = (this.vida += medicina);
+    this.vida += medicina;
 
-    if (vida >= 100) {
+    if (this.vida > 100) {
       this.vida = 100;
     }
-    return vida;
+    return this.vida;
   }
   deshabilitarAtaque() {
     const ataqueAdeshabilitar = this.ataques.find(
@@ -83,7 +104,7 @@ const botonClaroOscuro = document.querySelector("#claro-oscuro-btn");
 const icono = document.querySelector("#icono");
 
 let error = document.querySelector(".errors");
-let mensajeCarga = document.querySelector(".mensaje-carga")
+let mensajeCarga = document.querySelector(".mensaje-carga");
 
 contenedorNivelSangre.style.display = "none";
 formularioIngreso.style.display = "none";
@@ -115,21 +136,19 @@ const modoClaroOscuro = () => {
 };
 botonClaroOscuro.addEventListener("click", modoClaroOscuro);
 
-let jugador = {};
-let enemigo = {};
-
 const cargarJugadores = () => {
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     setTimeout(() => {
       const existenJugadores = localStorage.getItem("jugadores");
 
       if (existenJugadores !== null) {
         resolve(JSON.parse(existenJugadores));
-      } 
+      } else {
+        reject(new Error("No se encontraron datos guardados."));
+      }
     }, 3000);
   });
 };
-
 
 const crearJugadores = async (e) => {
   e.preventDefault();
@@ -142,18 +161,17 @@ const crearJugadores = async (e) => {
 
     if (existenJugadores !== null) {
       mensajeCarga.classList.add("mensaje-carga");
-      mensajeCarga.textContent = "Cargando los nombres de los jugadores"
+      mensajeCarga.textContent = "Cargando los nombres de los jugadores";
       const jugadoresGuardados = await cargarJugadores();
 
-      if(jugadoresGuardados){
+      if (jugadoresGuardados) {
         setTimeout(() => {
-          mensajeCarga.textContent = ""
-          mensajeCarga.classList.remove("mensaje-carga")
-        }, 2000)
+          mensajeCarga.textContent = "";
+          mensajeCarga.classList.remove("mensaje-carga");
+        }, 2000);
       }
 
       [{ nombreJugador }, { nombreEnemigo }] = jugadoresGuardados;
-
     } else {
       nombreJugador = inputJugador.value.trim();
       nombreEnemigo = inputEnemigo.value.trim();
@@ -171,10 +189,7 @@ const crearJugadores = async (e) => {
         return;
       }
 
-      const jugadores = [
-        { nombreJugador },
-        { nombreEnemigo },
-      ];
+      const jugadores = [{ nombreJugador }, { nombreEnemigo }];
 
       localStorage.setItem("jugadores", JSON.stringify(jugadores));
     }
@@ -182,26 +197,28 @@ const crearJugadores = async (e) => {
     jugador = new Jugador(nombreJugador);
     enemigo = new Jugador(nombreEnemigo);
 
+    vidaJugador.style.width = `${jugador.vida}%`;
+    vidaEnemigo.style.width = `${enemigo.vida}%`;
+    validarColorBarrasVida(jugador.vida, enemigo.vida);
+
     renderizarNombres();
 
     formularioIngreso.style.display = "none";
     contenedorNivelSangre.style.display = "block";
 
+    iniciarJuego();
   } catch (error) {
     console.error("Error al crear los jugadores:", error);
 
     mostrarMensaje(
-      "No se pudieron recuperar los datos de los jugadores. Inténtalo nuevamente."
+      "No se pudieron recuperar los datos de los jugadores. Inténtalo nuevamente.",
     );
-
   } finally {
     console.log("Finalizó el intento de creación de jugadores.");
   }
 };
 
 formularioIngreso.addEventListener("submit", crearJugadores);
-
-
 
 const renderizarNombres = () => {
   nombreJugadores[0].innerHTML = jugador.nombre;
@@ -210,15 +227,9 @@ const renderizarNombres = () => {
 };
 
 const mostrarMensaje = (msj) => {
-  overlay.style.display = "flex";
-  mensajePopUp.style.display = "block";
-  mensaje.textContent = msj;
+  Swal.fire(msj);
 };
 
-const ocultarMensaje = () => {
-  overlay.style.display = "none";
-};
-cerrarMensajeBtn.addEventListener("click", ocultarMensaje);
 
 const validarColorBarrasVida = (estadoJugador, estadoEnemigo) => {
   estadoJugador <= 25
@@ -230,19 +241,30 @@ const validarColorBarrasVida = (estadoJugador, estadoEnemigo) => {
     : (vidaEnemigo.style.backgroundColor = "#3dee1a");
 };
 
+const esperarTurno = () => {
+  return new Promise((resolve) => {
+    resolverTurno = resolve;
+  });
+};
+
+const registrarTurno = (turno) => {
+  if (!resolverTurno) return;
+
+  const resolver = resolverTurno;
+  resolverTurno = null;
+  resolver(turno);
+};
+
 // // MOSTRAR MENÚ
-const mostrarMenu = () => {
+const mostrarMenu = async () => {
   contenedorTarjetasAcciones.innerHTML = "";
   contenedorTarjetasAcciones.style.display = "grid";
   contenedorTarjetasAtaques.style.display = "none";
 
-  const opciones = [
-    { id: 1, descripcion: "Golpear", icono: "👊" },
-    { id: 2, descripcion: "Curarte", icono: "❤️" },
-    { id: 3, descripcion: "Huir", icono: "🏃" },
-    { id: 4, descripcion: "Poción mágica", icono: "🧪" },
-    { id: 5, descripcion: "Salir de la pelea", icono: "🚪" },
-  ];
+  const datosObtenidos = await cargarDatos();
+  const opciones = datosObtenidos.filter(
+    (objeto) => objeto.categoria === "acciones",
+  );
 
   opciones.forEach((element) => {
     const tarjeta = document.createElement("article");
@@ -254,23 +276,31 @@ const mostrarMenu = () => {
       <span>${element.icono}</span>
       <p>${element.id}</p>
     `;
-
     tarjeta.addEventListener("click", (e) => {
       const contenido = e.target.closest(".tarjeta-acciones");
       const accion = Number(contenido.querySelector("p").textContent);
 
-      ejecutarAccion(accion);
+      registrarTurno({ tipo: "accion", id: accion });
     });
     contenedorTarjetasAcciones.appendChild(tarjeta);
   });
 };
 
 // ATACAR
-const mostrarListadoAtaques = (ataques) => {
+const mostrarListadoAtaques = async () => {
+  contenedorTarjetasAtaques.innerHTML = "";
   contenedorTarjetasAtaques.style.display = "grid";
   contenedorTarjetasAcciones.style.display = "none";
 
-  ataques.forEach((element) => {
+  const datosObtenidos = await cargarDatos();
+
+  if (jugador.ataques.length === 0) {
+    jugador.ataques = datosObtenidos
+      .filter((objeto) => objeto.categoria === "ataques")
+      .map((ataque) => ({ ...ataque }));
+  }
+
+  jugador.ataques.forEach((element) => {
     if (element.habilitado) {
       const tarjeta = document.createElement("article");
       tarjeta.classList.add("tarjeta-ataques");
@@ -285,7 +315,7 @@ const mostrarListadoAtaques = (ataques) => {
         const contenido = e.target.closest(".tarjeta-ataques");
         const opcionAtaque = Number(contenido.querySelector("p").textContent);
 
-        gestionAtaque(opcionAtaque);
+        registrarTurno({ tipo: "ataque", id: opcionAtaque });
       });
       contenedorTarjetasAtaques.appendChild(tarjeta);
     }
@@ -294,7 +324,7 @@ const mostrarListadoAtaques = (ataques) => {
 
 const gestionAtaque = (opcionAtaque) => {
   if (jugador.intentosDeAtaque > 2) {
-    mostrarMensaje("Ya no puedes atacar más. Selecciona sí o sí la opción 4.");
+    mostrarMensaje("Ya no puedes atacar más. Selecciona sí o sí la opción 10.");
     contenedorTarjetasAcciones.style.display = "grid";
     contenedorTarjetasAtaques.innerHTML = "";
     contenedorTarjetasAtaques.style.display = "none";
@@ -303,7 +333,7 @@ const gestionAtaque = (opcionAtaque) => {
   if (jugador.intentosDeAtaque === 2) {
     jugador.intentosDeAtaque++;
     mostrarMensaje(
-      "Estás golpeando mucho. Dejemos que la suerte juegue ahora. Selecciona sí o sí la opción 4.",
+      "Estás golpeando mucho. Dejemos que la suerte juegue ahora. Selecciona sí o sí la opción 10.",
     );
     contenedorTarjetasAcciones.style.display = "grid";
     contenedorTarjetasAtaques.innerHTML = "";
@@ -311,33 +341,29 @@ const gestionAtaque = (opcionAtaque) => {
     return;
   }
 
-  let ataqueSeleccionado = "";
+  const ataqueSeleccionado = jugador.ataques.find(
+    (ataque) => ataque.id === opcionAtaque && ataque.habilitado,
+  );
 
-  jugador.ataques.find((ataque) => {
-    if (ataque.id === opcionAtaque && ataque.habilitado) {
-      ataqueSeleccionado = ataque;
-    }
-  });
-
-  if (ataqueSeleccionado) {
-    const vida = enemigo.recibirDaño(ataqueSeleccionado.daño);
-    vidaEnemigo.style.width = `${vida}%`;
-    jugador.intentosDeAtaque++;
-    mostrarMensaje(
-      `💥Golpeaste al enemigo con: ${ataqueSeleccionado.nombre}
-        Vida enemiga: ${enemigo.vida}%`,
-    );
-    contenedorTarjetasAcciones.style.display = "grid";
-    overlay.style.display = "block";
-    contenedorTarjetasAtaques.innerHTML = "";
-    contenedorTarjetasAtaques.style.display = "none";
-  }
-
-  if (!ataqueSeleccionado.habilitado) {
+  if (!ataqueSeleccionado) {
     mostrarMensaje("❌ No tienes disponible ese ataque");
     contenedorTarjetasAcciones.style.display = "grid";
     contenedorTarjetasAtaques.innerHTML = "";
+    contenedorTarjetasAtaques.style.display = "none";
+    return;
   }
+
+  const vida = enemigo.recibirDaño(ataqueSeleccionado.daño);
+  vidaEnemigo.style.width = `${vida}%`;
+  jugador.intentosDeAtaque++;
+  mostrarMensaje(
+    `💥Golpeaste al enemigo con: ${ataqueSeleccionado.nombre}
+      Vida enemiga: ${enemigo.vida}%`,
+  );
+  contenedorTarjetasAcciones.style.display = "grid";
+  contenedorTarjetasAtaques.innerHTML = "";
+  contenedorTarjetasAtaques.style.display = "none";
+
   validarColorBarrasVida(jugador.vida, enemigo.vida);
 };
 
@@ -369,7 +395,7 @@ const curarse = () => {
   jugador.intentosDeAtaque = 0;
 
   mostrarMensaje(
-    `Te curaste. Muy bien!!! ❤️\nTu vida está al: ${jugador.vida}"%`,
+    `Te curaste. Muy bien!!! ❤️\nTu vida está al: ${jugador.vida}%`,
   );
   validarColorBarrasVida(jugador.vida, enemigo.vida);
 };
@@ -408,32 +434,33 @@ const usarPocionMagica = () => {
     if (valorAleatorio === 5 || valorAleatorio === 3 || valorAleatorio === 8) {
       mostrarMensaje("La suerte estuvo de parte de los dos; se salvaron!!");
       jugador.intentosDeAtaque = 0;
-    }
-
-    if (valorAleatorio > 5) {
+      formularioPocionMagica.style.display = "none";
+    } else if (valorAleatorio > 5) {
       const vida = jugador.recibirDaño(90);
       vidaJugador.style.width = `${vida}%`;
       jugador.intentosDeAtaque = 0;
       enemigo.intentosDeAtaque++;
-      enemigo.curarse(35);
+      const vidaEnemiga = enemigo.curarse(35);
+      vidaEnemigo.style.width = `${vidaEnemiga}%`;
 
       const ataqueDeshabilitado = jugador.deshabilitarAtaque();
+      const nombreAtaque = ataqueDeshabilitado
+        ? ataqueDeshabilitado.nombre
+        : "ninguno";
 
       mostrarMensaje(
         `Ufff, Ouch!! Lo siento, tu nivel de vida está al:
-            ${jugador.vida}%
-            \n
-            Además perdiste un poder: 
-            ${ataqueDeshabilitado.nombre}
-            \n
-            "Adicionalmente tu enemigo recuperó vida al:
-            ${enemigo.vida}%`,
+          ${jugador.vida}%
+          \n
+          Además perdiste un poder: 
+          ${nombreAtaque}
+          \n
+          "Adicionalmente tu enemigo recuperó vida al:
+          ${enemigo.vida}%`,
       );
       formularioPocionMagica.style.display = "none";
       validarColorBarrasVida(jugador.vida, enemigo.vida);
-    }
-
-    if (valorAleatorio < 5) {
+    } else if (valorAleatorio < 5) {
       const vida = enemigo.recibirDaño(30);
       vidaEnemigo.style.width = `${vida}%`;
       const ataqueHabilitado = jugador.habilitarAtaque();
@@ -443,11 +470,13 @@ const usarPocionMagica = () => {
           enemigo.vida +
           "% \n" +
           "Ademas ganaste un nuevo ataque: " +
-          ataqueHabilitado.nombre,
+          (ataqueHabilitado ? ataqueHabilitado.nombre : "ninguno"),
       );
       formularioPocionMagica.style.display = "none";
       validarColorBarrasVida(jugador.vida, enemigo.vida);
     }
+
+    comprobarEstadoDelJuego();
   };
 };
 
@@ -455,86 +484,114 @@ const usarPocionMagica = () => {
 const salirDelJuego = () => {
   juegoEnMarcha = false;
   contenedorTarjetasAcciones.style.display = "none";
+  contenedorTarjetasAtaques.innerHTML = "";
+  contenedorTarjetasAtaques.style.display = "none";
   contenedorNivelSangre.style.display = "none";
   formularioIngreso.style.display = "block";
+  jugador.vida = 100;
+  enemigo.vida = 100;
+  vidaJugador.style.width = `${jugador.vida}%`;
+  vidaEnemigo.style.width = `${enemigo.vida}%`;
+  validarColorBarrasVida(jugador.vida, enemigo.vida);
+  jugador.intentosDeAtaque = 0;
+  jugador.intentosDeCuracion = 0;
+  jugador.ataques = [];
 };
 
 // // COMPROBAR RESULTADO
-// const comprobarEstadoDelJuego = () => {
-//   if (enemigo.vida <= 0) {
-//     juegoEnMarcha = false;
-//     alert(
-//       "🏆 ¡GANASTE! En la consola presionando F12, veras las estadísticas finales de la partida",
-//     );
-//     console.log(
-//       "Estadísticas:",
-//       "\nJugador:",
-//       {
-//         ...jugador,
-//         ataques: jugador.ataques.filter((ataque) => ataque.habilitado),
-//       },
-//       "\nEnemigo:",
-//       {
-//         ...enemigo,
-//         ataques: enemigo.ataques.filter((ataque) => ataque.habilitado),
-//       },
-//     );
-//     return;
-//   }
+const comprobarEstadoDelJuego = () => {
+  if (enemigo.vida <= 0) {
+    juegoEnMarcha = false;
+    alert(
+      "🏆 ¡GANASTE! En la consola presionando F12, veras las estadísticas finales de la partida",
+    );
+    console.log(
+      "Estadísticas:",
+      "\nJugador:",
+      {
+        ...jugador,
+        ataques: jugador.ataques.filter((ataque) => ataque.habilitado),
+      },
+      "\nEnemigo:",
+      {
+        ...enemigo,
+        ataques: enemigo.ataques.filter((ataque) => ataque.habilitado),
+      },
+    );
+    registrarTurno(null);
+    return;
+  }
 
-//   if (jugador.vida <= 0) {
-//     juegoEnMarcha = false;
-//     alert(
-//       "💀 PERDISTE!! En la consola presionando F12, veras las estadísticas finales de la partida",
-//     );
-//     console.log(
-//       "Estadísticas:",
-//       "\nJugador:",
-//       {
-//         ...jugador,
-//         ataques: jugador.ataques.filter((ataque) => ataque.habilitado),
-//       },
-//       "\nEnemigo:",
-//       {
-//         ...enemigo,
-//         ataques: enemigo.ataques.filter((ataque) => ataque.habilitado),
-//       },
-//     );
-//     return;
-//   }
-// };
+  if (jugador.vida <= 0) {
+    juegoEnMarcha = false;
+    alert(
+      "💀 PERDISTE!! En la consola presionando F12, veras las estadísticas finales de la partida",
+    );
+    console.log(
+      "Estadísticas:",
+      "\nJugador:",
+      {
+        ...jugador,
+        ataques: jugador.ataques.filter((ataque) => ataque.habilitado),
+      },
+      "\nEnemigo:",
+      {
+        ...enemigo,
+        ataques: enemigo.ataques.filter((ataque) => ataque.habilitado),
+      },
+    );
+    registrarTurno(null);
+    return;
+  }
+};
 
-// while (juegoEnMarcha) {
-// const accion = mostrarMenu();
-// console.log(accion)
-
-//   const esValida = validarAccion(accion);
-
-//   if (esValida) {
 const ejecutarAccion = (accion) => {
   switch (accion) {
-    case 1:
-      mostrarListadoAtaques(jugador.ataques);
+    case 7:
+      mostrarListadoAtaques();
       break;
 
-    case 2:
+    case 8:
       curarse();
       break;
 
-    case 3:
+    case 9:
       huir();
       break;
 
-    case 4:
+    case 10:
       usarPocionMagica();
       break;
 
-    case 5:
+    case 11:
       salirDelJuego();
       break;
   }
 };
 
-//     comprobarEstadoDelJuego();
-//   }
-// }
+const iniciarJuego = async () => {
+  if (juegoEnMarcha) return;
+
+  juegoEnMarcha = true;
+
+  while (juegoEnMarcha) {
+    const turno = await esperarTurno();
+
+    if (!turno) continue;
+
+    if (turno.tipo === "ataque") {
+      gestionAtaque(turno.id);
+    } else {
+      ejecutarAccion(turno.id);
+    }
+
+    comprobarEstadoDelJuego();
+  }
+
+  contenedorTarjetasAcciones.style.display = "none";
+  contenedorTarjetasAtaques.style.display = "none";
+  contenedorNivelSangre.style.display = "none";
+  overlay.style.display = "none";
+  mensajePopUp.style.display = "none";
+  modalInicio.style.display = "block";
+};
