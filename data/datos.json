@@ -1,0 +1,86 @@
+[
+  {
+    "id": 1,
+    "nombre": "Puño",
+    "descripcion": "Golpear",
+    "daño": 20,
+    "icono": "👊",
+    "habilitado": true,
+    "categoria": "ataques"
+  },
+  {
+    "id": 2,
+    "nombre": "Patada",
+    "descripcion": "Golpear",
+    "daño": 25,
+    "icono": "🦵",
+    "habilitado": true,
+    "categoria": "ataques"
+  },
+  {
+    "id": 3,
+    "nombre": "Espadazo",
+    "descripcion": "Golpear",
+    "daño": 30,
+    "icono": "⚔️",
+    "habilitado": true,
+    "categoria": "ataques"
+  },
+  {
+    "id": 4,
+    "nombre": "Hechizo",
+    "descripcion": "Golpear",
+    "daño": 35,
+    "icono": "🪄",
+    "habilitado": true,
+    "categoria": "ataques"
+  },
+  {
+    "id": 5,
+    "nombre": "Flecha",
+    "descripcion": "Golpear",
+    "daño": 40,
+    "icono": "🏹",
+    "habilitado": true,
+    "categoria": "ataques"
+  },
+  {
+    "id": 6,
+    "nombre": "Lanza",
+    "descripcion": "Golpear",
+    "daño": 15,
+    "icono": "🔱",
+    "habilitado": false,
+    "categoria": "ataques"
+  },
+  {
+    "id": 7,
+    "descripcion": "Golpear",
+    "icono": "👊",
+    "categoria": "acciones"
+  },
+  {
+    "id": 8,
+    "descripcion": "Curarte",
+    "icono": "❤️",
+    "categoria": "acciones"
+  },
+  {
+    "id": 9,
+    "descripcion": "Huir",
+    "icono": "🏃",
+    "categoria": "acciones"
+  },
+  {
+    "id": 10,
+    "descripcion": "Poción mágica",
+    "icono": "🧪",
+    "categoria": "acciones"
+  },
+  {
+    "id": 11,
+    "descripcion": "Salir de la pelea",
+    "icono": "🚪",
+    "categoria": "acciones"
+  }
+]
