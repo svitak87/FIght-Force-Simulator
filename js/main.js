@@ -227,15 +227,9 @@ const renderizarNombres = () => {
 };
 
 const mostrarMensaje = (msj) => {
-  overlay.style.display = "flex";
-  mensajePopUp.style.display = "block";
-  mensaje.textContent = msj;
+  Swal.fire(msj);
 };
 
-const ocultarMensaje = () => {
-  overlay.style.display = "none";
-};
-cerrarMensajeBtn.addEventListener("click", ocultarMensaje);
 
 const validarColorBarrasVida = (estadoJugador, estadoEnemigo) => {
   estadoJugador <= 25
