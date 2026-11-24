@@ -476,7 +476,7 @@ const usarPocionMagica = () => {
       validarColorBarrasVida(jugador.vida, enemigo.vida);
     }
 
-    // comprobarEstadoDelJuego();
+    comprobarEstadoDelJuego();
   };
 };
 
@@ -525,8 +525,9 @@ const comprobarEstadoDelJuego = () => {
   if (jugador.vida <= 0) {
     juegoEnMarcha = false;
     mostrarMensaje(
-      "💀 PERDISTE!! En la consola presionando F12, veras las estadísticas finales de la partida",
+      "💀 PERDISTE!! Haz click en el 'Ok'para ver las estadísticas finales.",
     );
+    modalInicio.style.display = "block";
     console.log(
       "Estadísticas:",
       "\nJugador:",
