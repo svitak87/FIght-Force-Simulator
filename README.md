@@ -18,12 +18,13 @@ El jugador puede:
 * `switch`
 * `if / else`
 * Variables y operadores
-* `prompt()` y `alert()`
 * Control de estados mediante variables
 * Lógica de juego y condiciones
 
 ## 🚀 Ejecución
 
 Abrir el archivo JavaScript/HTML en un navegador y comenzar la pelea.
+
+Puedes ver en producción el proyecto en la siguiente URL: https://fightforcesimulator.vercel.app/
 
 **Objetivo:** derrotar al enemigo antes de que la vida del jugador llegue a `0`.
