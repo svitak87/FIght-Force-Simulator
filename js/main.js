@@ -214,7 +214,7 @@ const crearJugadores = async (e) => {
       "No se pudieron recuperar los datos de los jugadores. Inténtalo nuevamente.",
     );
   } finally {
-    console.log("Finalizó el intento de creación de jugadores.");
+    mostrarMensaje("Finalizó el intento de creación de jugadores.");
   }
 };
 
@@ -409,9 +409,8 @@ const huir = () => {
 
     return;
   }
-  alert(
-    "🏃 Escapaste de la pelea. 💀 PERDISTE!! \n" +
-      "En la consola presionando F12, veras las estadísticas finales",
+  mostrarMensaje(
+    "🏃 Escapaste de la pelea. 💀 PERDISTE!!"
   );
   console.log("Estadísticas:", "\nJugador:", jugador, "\nEnemigo:", enemigo);
   juegoEnMarcha = false;
@@ -459,6 +458,7 @@ const usarPocionMagica = () => {
           ${enemigo.vida}%`,
       );
       formularioPocionMagica.style.display = "none";
+      overlay.style.display = "none";
       validarColorBarrasVida(jugador.vida, enemigo.vida);
     } else if (valorAleatorio < 5) {
       const vida = enemigo.recibirDaño(30);
@@ -476,7 +476,7 @@ const usarPocionMagica = () => {
       validarColorBarrasVida(jugador.vida, enemigo.vida);
     }
 
-    comprobarEstadoDelJuego();
+    // comprobarEstadoDelJuego();
   };
 };
 
@@ -502,8 +502,8 @@ const salirDelJuego = () => {
 const comprobarEstadoDelJuego = () => {
   if (enemigo.vida <= 0) {
     juegoEnMarcha = false;
-    alert(
-      "🏆 ¡GANASTE! En la consola presionando F12, veras las estadísticas finales de la partida",
+    mostrarMensaje(
+      "🏆 ¡GANASTE!",
     );
     console.log(
       "Estadísticas:",
@@ -524,7 +524,7 @@ const comprobarEstadoDelJuego = () => {
 
   if (jugador.vida <= 0) {
     juegoEnMarcha = false;
-    alert(
+    mostrarMensaje(
       "💀 PERDISTE!! En la consola presionando F12, veras las estadísticas finales de la partida",
     );
     console.log(
@@ -593,5 +593,4 @@ const iniciarJuego = async () => {
   contenedorNivelSangre.style.display = "none";
   overlay.style.display = "none";
   mensajePopUp.style.display = "none";
-  modalInicio.style.display = "block";
 };
