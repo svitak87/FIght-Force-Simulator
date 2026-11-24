@@ -293,8 +293,97 @@ body.oscuro .tarjeta-ataques {
 
 /* =========================
    MENSAJE DE CARGA
-========================= */
+ ========================= */
 .mensaje-carga{
   color: #178002;
   font-size: 1rem;
+}
+
+
+/* =========================
+   ESTADÍSTICAS FINALES
+ ========================= */
+
+.estadisticas {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background-color: rgba(22, 21, 21, 0.8);
+}
+
+.tarjeta-estadisticas {
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  background-color: #fff;
+  color: #000;
+  border: 2px solid red;
+  border-radius: 10px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.6);
+}
+
+.tarjeta-estadisticas h2 {
+  text-align: center;
+  font-size: 1.6rem;
+}
+
+.resultado-partida {
+  text-align: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.bloque-estadisticas h3 {
+  margin-bottom: 8px;
+  padding-bottom: 4px;
+  border-bottom: 2px solid #444;
+  font-size: 1.2rem;
+}
+
+.lista-estadisticas {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.lista-estadisticas li {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 8px;
+  background-color: #f2f2f2;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.lista-estadisticas li span {
+  color: #555;
+}
+
+.lista-estadisticas li strong {
+  text-align: right;
+}
+
+/* Modo oscuro */
+body.oscuro .tarjeta-estadisticas {
+  background-color: #1a1a1a;
+  color: #fff;
+}
+
+body.oscuro .lista-estadisticas li {
+  background-color: #000;
+}
+
+body.oscuro .lista-estadisticas li span {
+  color: #bbb;
 }

@@ -412,8 +412,8 @@ const huir = () => {
   mostrarMensaje(
     "🏃 Escapaste de la pelea. 💀 PERDISTE!!"
   );
-  console.log("Estadísticas:", "\nJugador:", jugador, "\nEnemigo:", enemigo);
   juegoEnMarcha = false;
+  mostrarEstadisticasFinales("🏃 Huiste de la pelea");
 };
 
 // // POCIÓN MÁGICA
@@ -434,6 +434,7 @@ const usarPocionMagica = () => {
       mostrarMensaje("La suerte estuvo de parte de los dos; se salvaron!!");
       jugador.intentosDeAtaque = 0;
       formularioPocionMagica.style.display = "none";
+      overlay.style.display = "none"
     } else if (valorAleatorio > 5) {
       const vida = jugador.recibirDaño(90);
       vidaJugador.style.width = `${vida}%`;
@@ -483,6 +484,7 @@ const usarPocionMagica = () => {
 // SALIR DEL JUEGO
 const salirDelJuego = () => {
   juegoEnMarcha = false;
+  contenedorEstadisticas.style.display = "none";
   contenedorTarjetasAcciones.style.display = "none";
   contenedorTarjetasAtaques.innerHTML = "";
   contenedorTarjetasAtaques.style.display = "none";
@@ -498,6 +500,58 @@ const salirDelJuego = () => {
   jugador.ataques = [];
 };
 
+//ESTADISTICAS FINALES
+const contenedorEstadisticas = document.querySelector(
+  "#contenedor-estadisticas",
+);
+const resultadoPartida = document.querySelector("#resultado-partida");
+const estadisticasJugador = document.querySelector("#estadisticas-jugador");
+const estadisticasEnemigo = document.querySelector("#estadisticas-enemigo");
+const tituloJugador = document.querySelector("#titulo-jugador");
+const tituloEnemigo = document.querySelector("#titulo-enemigo");
+const cerrarEstadisticasBtn = document.querySelector("#cerrar-estadisticas");
+
+const listarAtaquesDisponibles = (luchador) => {
+  const ataquesHabilitados = luchador.ataques.filter(
+    (ataque) => ataque.habilitado,
+  );
+
+  if (ataquesHabilitados.length === 0) return "Ninguno";
+
+  return ataquesHabilitados
+    .map((ataque) => `${ataque.icono} ${ataque.nombre} (${ataque.daño})`)
+    .join(" · ");
+};
+
+const crearEstadisticasLuchador = (luchador) => {
+  return `
+    <li><span>Nombre</span><strong>${luchador.nombre}</strong></li>
+    <li><span>Vida restante</span><strong>${luchador.vida}%</strong></li>
+    <li><span>Intentos de ataque</span><strong>${luchador.intentosDeAtaque}</strong></li>
+    <li><span>Intentos de curación</span><strong>${luchador.intentosDeCuracion}</strong></li>
+    <li><span>Ataques disponibles</span><strong>${listarAtaquesDisponibles(luchador)}</strong></li>
+  `;
+};
+
+const mostrarEstadisticasFinales = (resultado) => {
+  resultadoPartida.textContent = resultado || "Partida finalizada";
+
+  tituloJugador.textContent = jugador.nombre;
+  tituloEnemigo.textContent = enemigo.nombre;
+
+  estadisticasJugador.innerHTML = crearEstadisticasLuchador(jugador);
+  estadisticasEnemigo.innerHTML = crearEstadisticasLuchador(enemigo);
+
+  contenedorEstadisticas.style.display = "flex";
+};
+
+cerrarEstadisticasBtn.addEventListener("click", () => {
+  contenedorEstadisticas.style.display = "none";
+  modalInicio.style.display = "none";
+  salirDelJuego();
+});
+
+
 // // COMPROBAR RESULTADO
 const comprobarEstadoDelJuego = () => {
   if (enemigo.vida <= 0) {
@@ -505,20 +559,8 @@ const comprobarEstadoDelJuego = () => {
     mostrarMensaje(
       "🏆 ¡GANASTE!",
     );
-    console.log(
-      "Estadísticas:",
-      "\nJugador:",
-      {
-        ...jugador,
-        ataques: jugador.ataques.filter((ataque) => ataque.habilitado),
-      },
-      "\nEnemigo:",
-      {
-        ...enemigo,
-        ataques: enemigo.ataques.filter((ataque) => ataque.habilitado),
-      },
-    );
     registrarTurno(null);
+    mostrarEstadisticasFinales("🏆 ¡Ganaste!");
     return;
   }
 
@@ -527,21 +569,8 @@ const comprobarEstadoDelJuego = () => {
     mostrarMensaje(
       "💀 PERDISTE!! Haz click en el 'Ok'para ver las estadísticas finales.",
     );
-    modalInicio.style.display = "block";
-    console.log(
-      "Estadísticas:",
-      "\nJugador:",
-      {
-        ...jugador,
-        ataques: jugador.ataques.filter((ataque) => ataque.habilitado),
-      },
-      "\nEnemigo:",
-      {
-        ...enemigo,
-        ataques: enemigo.ataques.filter((ataque) => ataque.habilitado),
-      },
-    );
     registrarTurno(null);
+    mostrarEstadisticasFinales("💀 ¡Perdiste!");
     return;
   }
 };
